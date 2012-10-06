@@ -180,11 +180,14 @@ component extends="mxunit.framework.TestCase" {
 	    assertTrue(_.every([true, true, true], _.identity), 'aliased as "every"');
 
 	    var keyCorrect = false;
-	    _.all({someKey:1},function (val, key) {
+	    _.all({someKey:1}, function (val, key) {
 	    	if (key == 'someKey') keyCorrect = true;
 	    	return true;
 	    });
 	    assertTrue(keyCorrect, "Iterator key should be object key"); 	    
+	    var ary = [];
+	    arrayResize(ary, 3);
+	    assertTrue(!_.all(ary, _.identity), 'works with arrays of undefined');
 	}
 	
 	public void function testAny() {

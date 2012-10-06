@@ -16,6 +16,9 @@ component {
 		// used as the default iterator
 		_.identity = function(x) { return x; };
 
+		// for breaking out of _.each
+		variables.breaker = "underscorecf_breaker";
+
 		// for uniqueId
 		variables.counter = 1;
 
@@ -35,7 +38,7 @@ component {
 			var index = 1;
 			for (element in arguments.obj) {
 				if (arrayIsDefined(arguments.obj, index)) {
-					iterator(element, index, arguments.obj, arguments.this);
+					if(iterator(element, index, arguments.obj, arguments.this) == breaker) return;
 				}
 				index++;
 			}
@@ -43,7 +46,7 @@ component {
 		else if (isObject(arguments.obj) || isStruct(arguments.obj)) {
 			for (key in arguments.obj) {
 				var val = arguments.obj[key];
-				iterator(val, key, arguments.obj, arguments.this);
+				if(iterator(val, key, arguments.obj, arguments.this) == breaker) return;
 			}
 		}
 		else {
@@ -313,33 +316,14 @@ component {
 	public boolean function all(obj = this.obj, iterator = _.identity, this = {}) {
 		var result = false;
 
-		if (isArray(arguments.obj)) {
-			var index = 1;
-			for (val in arguments.obj) {
-				result = iterator(val, index, arguments.obj, arguments.this);
-				if (!result) {
-					break;
-				}
-				index++;
-			}
-			if (arrayLen(arguments.obj) == 0) {
-				result = true;
-			}
+		if (_.size(arguments.obj) == 0) {
+			return true;
 		}
-		else if (isObject(arguments.obj) || isStruct(arguments.obj)) {
-			var index  = 1;
-			for (key in arguments.obj) {
-				var val = arguments.obj[key];
-				result = iterator(val, key, arguments.obj, arguments.this);
-				if (!result) {
-					break;
-				}
-				index++;
-			}
-		}
-		else {
-			return _.all(toArray(arguments.obj), iterator, arguments.this);
-		}
+
+		_.each(arguments.obj, function (val, index) {
+			result = iterator(val, index, obj, this);
+			if (!result) return breaker;
+		});
 
 		return toBoolean(result);
 	}
